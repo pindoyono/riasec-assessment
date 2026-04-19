@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <!-- Outer hexagon ring -->
+  <path d="M60,8 L95,28 L95,38 L60,20 L25,38 L25,28 Z" fill="#E85A5A"/>
+  <path d="M95,28 L112,55 L108,60 L92,38 Z" fill="#3A9D9D"/>
+  <path d="M112,55 L95,90 L92,82 L108,60 Z" fill="#5AAD5A"/>
+  <path d="M95,90 L60,112 L25,90 L28,82 L60,98 L92,82 Z" fill="#7B68A8"/>
+  <path d="M25,90 L8,55 L12,60 L28,82 Z" fill="#D4A84B"/>
+  <path d="M8,55 L25,28 L28,38 L12,55 Z" fill="#8B5DAD"/>
+  <!-- Inner hexagon ring -->
+  <path d="M60,20 L88,35 L88,42 L60,28 L32,42 L32,35 Z" fill="#E85A5A"/>
+  <path d="M88,35 L102,55 L98,60 L85,42 Z" fill="#3A9D9D"/>
+  <path d="M102,55 L88,78 L85,72 L98,58 Z" fill="#5AAD5A"/>
+  <path d="M88,78 L60,92 L32,78 L35,72 L60,84 L85,72 Z" fill="#7B68A8"/>
+  <path d="M32,78 L18,55 L22,58 L35,72 Z" fill="#D4A84B"/>
+  <path d="M18,55 L32,35 L35,42 L22,55 Z" fill="#8B5DAD"/>
+  <!-- Center white hexagon -->
+  <polygon points="60,30 82,45 82,70 60,85 38,70 38,45" fill="white"/>
+  <!-- Center icon -->
+  <circle cx="60" cy="52" r="10" fill="none" stroke="#4A90A4" stroke-width="2"/>
+  <path d="M60,45 Q66,48 64,54 Q62,60 56,58 Q52,55 55,50 Q57,47 60,48" fill="none" stroke="#4A90A4" stroke-width="1.5"/>
+  <text x="60" y="72" text-anchor="middle" fill="#4A90A4" font-size="6" font-weight="bold" font-family="sans-serif">strong</text>
+  <!-- RIASEC labels -->
+  <text x="60" y="16" text-anchor="middle" fill="white" font-size="6" font-weight="bold" font-family="sans-serif">R</text>
+  <text x="100" y="42" text-anchor="middle" fill="white" font-size="6" font-weight="bold" font-family="sans-serif">I</text>
+  <text x="100" y="78" text-anchor="middle" fill="white" font-size="6" font-weight="bold" font-family="sans-serif">A</text>
+  <text x="60" y="108" text-anchor="middle" fill="white" font-size="6" font-weight="bold" font-family="sans-serif">S</text>
+  <text x="20" y="78" text-anchor="middle" fill="white" font-size="6" font-weight="bold" font-family="sans-serif">E</text>
+  <text x="20" y="42" text-anchor="middle" fill="white" font-size="6" font-weight="bold" font-family="sans-serif">C</text>
+</svg>
