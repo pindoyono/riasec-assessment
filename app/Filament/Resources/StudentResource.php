@@ -146,31 +146,44 @@ class StudentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('nisn')
                     ->label('NISN')
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('NISN disalin!'),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Nama disalin!'),
 
                 Tables\Columns\TextColumn::make('gender')
                     ->label('JK')
                     ->badge()
-                    ->color(fn (string $state): string => $state === 'L' ? 'info' : 'pink'),
+                    ->color(fn (string $state): string => $state === 'L' ? 'info' : 'pink')
+                    ->copyable()
+                    ->copyMessage('Jenis kelamin disalin!'),
 
                 Tables\Columns\TextColumn::make('asal_sekolah')
                     ->label('Asal Sekolah')
                     ->searchable()
                     ->limit(25)
+                    ->copyable()
+                    ->copyMessage('Asal sekolah disalin!')
                     ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('school.name')
                     ->label('Lokasi Tempat Test')
                     ->searchable()
-                    ->limit(30),
+                    ->limit(30)
+                    ->copyable()
+                    ->copyMessage('Lokasi tempat test disalin!')
+                    ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('class')
-                    ->label('Kelas'),
+                    ->label('Kelas')
+                    ->copyable()
+                    ->copyMessage('Kelas disalin!'),
 
                 Tables\Columns\TextColumn::make('latestAssessment.status')
                     ->label('Status Assessment')

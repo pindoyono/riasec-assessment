@@ -132,17 +132,24 @@ class SchoolResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('npsn')
                     ->label('NPSN')
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('NPSN disalin!'),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Sekolah')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Nama sekolah disalin!'),
 
                 Tables\Columns\TextColumn::make('type')
                     ->label('Jenis')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => strtoupper($state)),
+                    ->formatStateUsing(fn (string $state): string => strtoupper($state))
+                    ->copyable()
+                    ->copyableState(fn (string $state): string => strtoupper($state))
+                    ->copyMessage('Jenis disalin!'),
 
                 Tables\Columns\TextColumn::make('registration_token')
                     ->label('Token')
@@ -156,6 +163,9 @@ class SchoolResource extends Resource
                     ->label('Expired')
                     ->dateTime('d M Y H:i')
                     ->color(fn (School $record): string => $record->isTokenExpired() ? 'danger' : 'success')
+                    ->copyable()
+                    ->copyableState(fn ($state): string => blank($state) ? '-' : $state->format('d M Y H:i'))
+                    ->copyMessage('Waktu expired disalin!')
                     ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('students_count')
