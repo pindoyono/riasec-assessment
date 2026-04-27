@@ -20,6 +20,10 @@ class ViewAssessment extends ViewRecord
                 ->visible(fn (): bool => $this->record->status === 'completed')
                 ->url(fn (): string => route('assessment.pdf', $this->record->assessment_code))
                 ->openUrlInNewTab(),
+            Actions\Action::make('activities')
+                ->label('Aktivitas')
+                ->icon('heroicon-o-clock')
+                ->url(fn (): string => AssessmentResource::getUrl('activities', ['record' => $this->record])),
         ];
     }
 }

@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class RiasecCategory extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $fillable = [
         'code',
@@ -21,6 +24,14 @@ class RiasecCategory extends Model
         'icon',
         'order',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('riasec_category')
+            ->logFillable()
+            ->logOnlyDirty();
+    }
 
     /**
      * Get the questions of this category.

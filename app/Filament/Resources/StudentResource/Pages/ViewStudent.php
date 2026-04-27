@@ -14,6 +14,10 @@ class ViewStudent extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
+            Actions\Action::make('activities')
+                ->label('Aktivitas')
+                ->icon('heroicon-o-clock')
+                ->url(fn (): string => StudentResource::getUrl('activities', ['record' => $this->record])),
         ];
     }
 }

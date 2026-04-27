@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Student extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $fillable = [
         'nisn',
@@ -37,6 +40,14 @@ class Student extends Model
             'birth_date' => 'date',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('student')
+            ->logFillable()
+            ->logOnlyDirty();
     }
 
     /**

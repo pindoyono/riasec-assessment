@@ -115,6 +115,10 @@ class QuestionResource extends Resource
                     ->label('Status'),
             ])
             ->actions([
+                Actions\Action::make('activities')
+                    ->label('Aktivitas')
+                    ->icon('heroicon-o-clock')
+                    ->url(fn (Question $record): string => static::getUrl('activities', ['record' => $record])),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ])
@@ -138,6 +142,7 @@ class QuestionResource extends Resource
         return [
             'index' => Pages\ListQuestions::route('/'),
             'create' => Pages\CreateQuestion::route('/create'),
+            'activities' => Pages\ListQuestionActivities::route('/{record}/activities'),
             'edit' => Pages\EditQuestion::route('/{record}/edit'),
         ];
     }

@@ -146,6 +146,10 @@ class SmkMajorResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
+                Actions\Action::make('activities')
+                    ->label('Aktivitas')
+                    ->icon('heroicon-o-clock')
+                    ->url(fn (SmkMajor $record): string => static::getUrl('activities', ['record' => $record])),
                 Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -168,6 +172,7 @@ class SmkMajorResource extends Resource
             'index' => Pages\ListSmkMajors::route('/'),
             'create' => Pages\CreateSmkMajor::route('/create'),
             'view' => Pages\ViewSmkMajor::route('/{record}'),
+            'activities' => Pages\ListSmkMajorActivities::route('/{record}/activities'),
             'edit' => Pages\EditSmkMajor::route('/{record}/edit'),
         ];
     }

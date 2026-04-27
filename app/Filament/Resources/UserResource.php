@@ -131,6 +131,10 @@ class UserResource extends Resource
                     ->label('Status'),
             ])
             ->actions([
+                Actions\Action::make('activities')
+                    ->label('Aktivitas')
+                    ->icon('heroicon-o-clock')
+                    ->url(fn (User $record): string => static::getUrl('activities', ['record' => $record])),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ])
@@ -153,6 +157,7 @@ class UserResource extends Resource
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
+            'activities' => Pages\ListUserActivities::route('/{record}/activities'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }

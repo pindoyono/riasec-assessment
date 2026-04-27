@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class SmkMajor extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $fillable = [
         'code',
@@ -28,6 +31,14 @@ class SmkMajor extends Model
             'riasec_profile' => 'array',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('smk_major')
+            ->logFillable()
+            ->logOnlyDirty();
     }
 
     /**
