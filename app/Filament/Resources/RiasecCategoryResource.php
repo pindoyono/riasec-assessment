@@ -127,10 +127,6 @@ class RiasecCategoryResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
-                Actions\Action::make('activities')
-                    ->label('Aktivitas')
-                    ->icon('heroicon-o-clock')
-                    ->url(fn (RiasecCategory $record): string => static::getUrl('activities', ['record' => $record])),
                 Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -154,7 +150,6 @@ class RiasecCategoryResource extends Resource
             'index' => Pages\ListRiasecCategories::route('/'),
             'create' => Pages\CreateRiasecCategory::route('/create'),
             'view' => Pages\ViewRiasecCategory::route('/{record}'),
-            'activities' => Pages\ListRiasecCategoryActivities::route('/{record}/activities'),
             'edit' => Pages\EditRiasecCategory::route('/{record}/edit'),
         ];
     }

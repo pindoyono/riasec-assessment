@@ -273,10 +273,6 @@ class AssessmentResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
-                Actions\Action::make('activities')
-                    ->label('Aktivitas')
-                    ->icon('heroicon-o-clock')
-                    ->url(fn (Assessment $record): string => static::getUrl('activities', ['record' => $record])),
                 Actions\Action::make('downloadPdf')
                     ->label('Download PDF')
                     ->icon('heroicon-o-document-arrow-down')
@@ -324,7 +320,6 @@ class AssessmentResource extends Resource
         return [
             'index' => Pages\ListAssessments::route('/'),
             'view' => Pages\ViewAssessment::route('/{record}'),
-            'activities' => Pages\ListAssessmentActivities::route('/{record}/activities'),
         ];
     }
 

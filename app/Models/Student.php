@@ -8,13 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Models\Concerns\HasActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 class Student extends Model
 {
-    use HasFactory;
-    use HasActivity;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'nisn',

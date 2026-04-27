@@ -195,10 +195,6 @@ class SchoolResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Actions\Action::make('activities')
-                    ->label('Aktivitas')
-                    ->icon('heroicon-o-clock')
-                    ->url(fn (School $record): string => static::getUrl('activities', ['record' => $record])),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ])
@@ -241,7 +237,6 @@ class SchoolResource extends Resource
         return [
             'index' => Pages\ListSchools::route('/'),
             'create' => Pages\CreateSchool::route('/create'),
-            'activities' => Pages\ListSchoolActivities::route('/{record}/activities'),
             'edit' => Pages\EditSchool::route('/{record}/edit'),
         ];
     }

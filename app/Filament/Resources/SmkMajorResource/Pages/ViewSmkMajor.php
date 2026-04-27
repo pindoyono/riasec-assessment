@@ -14,10 +14,6 @@ class ViewSmkMajor extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
-            Actions\Action::make('activities')
-                ->label('Aktivitas')
-                ->icon('heroicon-o-clock')
-                ->url(fn (): string => SmkMajorResource::getUrl('activities', ['record' => $this->record])),
         ];
     }
 }

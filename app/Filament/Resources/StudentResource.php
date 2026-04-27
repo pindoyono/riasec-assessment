@@ -217,10 +217,6 @@ class StudentResource extends Resource
             ->actions([
                 Actions\ViewAction::make(),
                 Actions\EditAction::make(),
-                Actions\Action::make('activities')
-                    ->label('Aktivitas')
-                    ->icon('heroicon-o-clock')
-                    ->url(fn (Student $record): string => static::getUrl('activities', ['record' => $record])),
                 Actions\Action::make('createAssessment')
                     ->label('Buat Assessment')
                     ->icon('heroicon-o-clipboard-document-list')
@@ -273,7 +269,6 @@ class StudentResource extends Resource
             'index' => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
             'view' => Pages\ViewStudent::route('/{record}'),
-            'activities' => Pages\ListStudentActivities::route('/{record}/activities'),
             'edit' => Pages\EditStudent::route('/{record}/edit'),
         ];
     }
