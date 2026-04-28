@@ -7,14 +7,22 @@
         </div>
 
         <div class="p-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
                 <div>
                     <p class="text-sm text-gray-500">Nama</p>
                     <p class="font-semibold text-gray-800">{{ $assessment->student->name }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Asal Sekolah</p>
+                    <p class="text-sm text-gray-500">NISN</p>
+                    <p class="font-semibold text-gray-800">{{ $assessment->student->nisn ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Lokasi Tempat Test</p>
                     <p class="font-semibold text-gray-800">{{ $assessment->student->school?->name ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Asal Sekolah</p>
+                    <p class="font-semibold text-gray-800">{{ $assessment->student->asal_sekolah ?? '-' }}</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Tanggal Tes</p>
