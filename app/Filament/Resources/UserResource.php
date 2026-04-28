@@ -46,10 +46,11 @@ class UserResource extends Resource
 
     public static function form(Schema $form): Schema
     {
+        $isSuperAdmin = auth()->user()?->hasRole('super_admin');
         return $form
             ->components([
                 Section::make('Informasi Pengguna')
-                    ->schema([
+                    ->schema(array_filter([
                         Forms\Components\TextInput::make('name')
                             ->label('Nama')
                             ->required()
@@ -71,24 +72,25 @@ class UserResource extends Resource
                             ->minLength(8)
                             ->maxLength(255),
 
-                        Forms\Components\Select::make('school_id')
+                        $isSuperAdmin ? Forms\Components\Select::make('school_id')
                             ->label('Sekolah')
                             ->relationship('school', 'name')
                             ->searchable()
                             ->preload()
-                            ->placeholder('Pilih Sekolah (Opsional)'),
+                            ->placeholder('Pilih Sekolah (Opsional)') : null,
 
-                        Forms\Components\Select::make('roles')
+                        $isSuperAdmin ? Forms\Components\Select::make('roles')
                             ->label('Role')
                             ->relationship('roles', 'name')
                             ->multiple()
                             ->preload()
-                            ->searchable(),
+                            ->searchable() : null,
 
-                        Forms\Components\Toggle::make('is_active')
+                        $isSuperAdmin ? Forms\Components\Toggle::make('is_active')
                             ->label('Aktif')
-                            ->default(true),
-                    ])->columns(2),
+                            ->default(true) : null,
+                    ]))
+                    ->columns(2),
             ]);
     }
 
