@@ -87,10 +87,31 @@ class UserResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('email')
+                Tables\Columns\TextInputColumn::make('email')
                     ->label('Email')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->rules(['required', 'email', 'max:255'])
+                    ->updateStateUsing(function (User $record, string $state): string {
+                        $state = trim($state);
+                        // Ensure uniqueness excluding the current record
+                        $exists = User::where('email', $state)
+                            ->where('id', '!=', $record->id)
+                            ->exists();
+                        if ($exists) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Email sudah digunakan oleh pengguna lain.')
+                                ->danger()
+                                ->send();
+                            return $record->email;
+                        }
+                        $record->update(['email' => $state]);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Email berhasil diperbarui.')
+                            ->success()
+                            ->send();
+                        return $state;
+                    }),
 
                 Tables\Columns\TextColumn::make('school.name')
                     ->label('Sekolah')
