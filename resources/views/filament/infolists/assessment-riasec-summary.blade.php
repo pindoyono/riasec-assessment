@@ -35,8 +35,7 @@
                     </td>
                     <td class="px-4 py-4 text-gray-800 leading-6 {{ $isTop ? 'bg-amber-50' : 'bg-gray-50' }}">
                         @if (filled($row['recommendations']))
-                            <p class="text-xs text-gray-500 mb-1">Berdasarkan Tes RIASEC Holland, kompetensi keahlian
-                                yang cocok antara lain:</p>
+                            <p class="text-xs text-gray-500 mb-1">Top 3 jurusan paling cocok:</p>
                             <p>{{ $row['recommendations'] }}.</p>
                             <div class="mt-2 text-xs font-medium {{ $isTop ? 'text-amber-700' : 'text-gray-500' }}">
                                 Total jurusan terkait: {{ $row['recommendation_count'] }}

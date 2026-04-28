@@ -205,8 +205,15 @@ class AssessmentResource extends Resource
                                 return collect($allCodes)
                                     ->map(function (string $code) use ($categories, $majors, $scoreMap, $topCodes): array {
                                         $category = $categories->get($code);
+
+                                        // Filter majors that match this code, sort by overlap with student's top codes
                                         $matchingMajors = $majors
                                             ->filter(fn (SmkMajor $major): bool => in_array($code, $major->riasec_profile ?? []))
+                                            ->map(function (SmkMajor $major) use ($topCodes): array {
+                                                $overlap = count(array_intersect($topCodes, $major->riasec_profile ?? []));
+                                                return ['name' => $major->name, 'overlap' => $overlap];
+                                            })
+                                            ->sortByDesc('overlap')
                                             ->pluck('name')
                                             ->unique()
                                             ->values();
@@ -218,7 +225,7 @@ class AssessmentResource extends Resource
                                             'score' => $scoreMap[$code] ?? 0,
                                             'is_top' => in_array($code, $topCodes),
                                             'recommendation_count' => $matchingMajors->count(),
-                                            'recommendations' => $matchingMajors->implode(' • '),
+                                            'recommendations' => $matchingMajors->take(3)->implode(' • '),
                                         ];
                                     })
                                     ->all();
