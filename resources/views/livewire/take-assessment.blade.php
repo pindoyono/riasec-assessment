@@ -45,7 +45,7 @@
 
             @if ($this->currentQuestion)
                 {{-- Question Card --}}
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div id="question-card" class="bg-white rounded-xl shadow-sm overflow-hidden">
                     {{-- Question Header --}}
                     <div
                         class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between">
@@ -71,21 +71,51 @@
                             $currentAnswer = $answers[$this->currentQuestion->id] ?? null;
                         @endphp
 
-                        <div class="grid grid-cols-5 gap-2">
+                        {{-- Mobile: compact radio list --}}
+                        <div class="sm:hidden space-y-2">
+                            <p class="text-[11px] text-gray-500 mb-1">
+                                Pilih jawaban untuk langsung lanjut ke soal berikutnya.
+                            </p>
+                            @foreach ($options as $value => $label)
+                                <label for="answer-mobile-{{ $this->currentQuestion->id }}-{{ $value }}"
+                                    class="flex items-center gap-2 p-2 rounded-lg border transition-all duration-150 cursor-pointer
+                                        {{ (int) $currentAnswer === $value
+                                            ? 'border-indigo-500 bg-indigo-50'
+                                            : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50' }}">
+                                    <input id="answer-mobile-{{ $this->currentQuestion->id }}-{{ $value }}"
+                                        type="radio" name="answer-mobile-{{ $this->currentQuestion->id }}"
+                                        wire:click="answerQuestion({{ $this->currentQuestion->id }}, {{ $value }})"
+                                        class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                        @checked((int) $currentAnswer === $value)>
+                                    <span
+                                        class="w-5 h-5 rounded-full text-[11px] flex items-center justify-center font-medium
+                                        {{ (int) $currentAnswer === $value ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600' }}">
+                                        {{ $value }}
+                                    </span>
+                                    <span
+                                        class="text-xs leading-tight {{ (int) $currentAnswer === $value ? 'text-indigo-700 font-medium' : 'text-gray-600' }}">
+                                        {{ $label }}
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        {{-- Tablet/Desktop: original option cards --}}
+                        <div class="hidden sm:grid sm:grid-cols-5 gap-2">
                             @foreach ($options as $value => $label)
                                 <button
                                     wire:click="answerQuestion({{ $this->currentQuestion->id }}, {{ $value }})"
                                     class="p-2 rounded-lg border-2 transition-all duration-150 text-center
-                                        {{ $currentAnswer === $value
+                                        {{ (int) $currentAnswer === $value
                                             ? 'border-indigo-500 bg-indigo-50'
                                             : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50' }}">
                                     <div
                                         class="w-7 h-7 rounded-full flex items-center justify-center mx-auto mb-1
-                                        {{ $currentAnswer === $value ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600' }}">
+                                        {{ (int) $currentAnswer === $value ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600' }}">
                                         {{ $value }}
                                     </div>
                                     <span
-                                        class="text-[10px] leading-tight block {{ $currentAnswer === $value ? 'text-indigo-700 font-medium' : 'text-gray-500' }}">
+                                        class="text-[10px] leading-tight block {{ (int) $currentAnswer === $value ? 'text-indigo-700 font-medium' : 'text-gray-500' }}">
                                         {{ $label }}
                                     </span>
                                 </button>
@@ -140,3 +170,25 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('question-advanced', () => {
+            if (window.innerWidth >= 640) {
+                return;
+            }
+
+            const card = document.getElementById('question-card');
+            if (!card) {
+                return;
+            }
+
+            requestAnimationFrame(() => {
+                card.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
+            });
+        });
+    });
+</script>

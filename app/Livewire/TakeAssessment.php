@@ -79,6 +79,7 @@ class TakeAssessment extends Component
         // Move to next question
         if ($this->currentIndex < $this->questions->count() - 1) {
             $this->currentIndex++;
+            $this->dispatch('question-advanced');
         } else {
             // Check if all questions answered
             $answeredCount = count($this->answers);
