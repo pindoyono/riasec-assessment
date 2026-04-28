@@ -4,17 +4,15 @@ namespace App\Filament\Resources\AssessmentResource\Pages;
 
 use App\Filament\Resources\AssessmentResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ViewRecord;
+use Filament\Resources\Pages\EditRecord;
 
-class ViewAssessment extends ViewRecord
+class EditAssessment extends EditRecord
 {
     protected static string $resource = AssessmentResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make()
-                ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') === true),
             Actions\DeleteAction::make()
                 ->requiresConfirmation()
                 ->modalHeading('Hapus Hasil Assessment?')
@@ -23,13 +21,11 @@ class ViewAssessment extends ViewRecord
                 ->successNotificationTitle('Hasil assessment berhasil dihapus.')
                 ->failureNotificationTitle('Gagal menghapus hasil assessment.')
                 ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') === true),
-            Actions\Action::make('downloadPdf')
-                ->label('Download PDF')
-                ->icon('heroicon-o-document-arrow-down')
-                ->color('success')
-                ->visible(fn (): bool => $this->record->status === 'completed')
-                ->url(fn (): string => route('assessment.pdf', $this->record->assessment_code))
-                ->openUrlInNewTab(),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

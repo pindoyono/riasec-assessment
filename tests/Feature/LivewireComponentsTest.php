@@ -140,6 +140,32 @@ class LivewireComponentsTest extends TestCase
             ->assertRedirect(route('assessment.result', ['assessmentCode' => $assessment->assessment_code]));
     }
 
+    public function test_student_login_reuses_existing_pending_assessment(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        $existingAssessment = Assessment::create([
+            'student_id' => $student->id,
+            'assessment_code' => 'ASM-EXISTING1',
+            'status' => 'pending',
+        ]);
+
+        Livewire::test(StudentLogin::class)
+            ->set('token', $school->registration_token)
+            ->call('validateToken')
+            ->set('nisn', $student->nisn)
+            ->call('login')
+            ->assertRedirect(route('assessment.take', ['assessmentCode' => $existingAssessment->assessment_code]));
+
+        $this->assertEquals(
+            1,
+            Assessment::where('student_id', $student->id)
+                ->whereIn('status', ['pending', 'in_progress'])
+                ->count()
+        );
+    }
+
     public function test_back_to_token_resets_state(): void
     {
         $school = $this->createSchoolWithToken();

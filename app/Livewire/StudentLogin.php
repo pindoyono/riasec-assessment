@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\School;
 use App\Models\Student;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class StudentLogin extends Component
@@ -63,29 +64,49 @@ class StudentLogin extends Component
             return;
         }
 
-        // Check if student has already completed assessment
-        if ($student->hasCompletedAssessment()) {
-            // Redirect to result page
-            return redirect()->route('assessment.result', [
-                'assessmentCode' => $student->completedAssessment->assessment_code,
-            ]);
-        }
+        $redirectRoute = 'assessment.take';
+        $redirectParams = [];
 
-        // Get or create pending assessment
-        $assessment = $student->assessments()
-            ->whereIn('status', ['pending', 'in_progress'])
-            ->first();
+        DB::transaction(function () use ($student, &$redirectRoute, &$redirectParams) {
+            // Lock student row to prevent race condition from concurrent login requests.
+            $lockedStudent = Student::query()
+                ->whereKey($student->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if (!$assessment) {
-            $assessment = $student->assessments()->create([
-                'status' => 'pending',
-            ]);
-        }
+            $completedAssessment = $lockedStudent->assessments()
+                ->where('status', 'completed')
+                ->latest('completed_at')
+                ->latest('id')
+                ->first();
 
-        // Redirect to assessment page
-        return redirect()->route('assessment.take', [
-            'assessmentCode' => $assessment->assessment_code,
-        ]);
+            if ($completedAssessment) {
+                $redirectRoute = 'assessment.result';
+                $redirectParams = [
+                    'assessmentCode' => $completedAssessment->assessment_code,
+                ];
+                return;
+            }
+
+            $assessment = $lockedStudent->assessments()
+                ->whereIn('status', ['pending', 'in_progress'])
+                ->latest('id')
+                ->lockForUpdate()
+                ->first();
+
+            if (!$assessment) {
+                $assessment = $lockedStudent->assessments()->create([
+                    'status' => 'pending',
+                ]);
+            }
+
+            $redirectRoute = 'assessment.take';
+            $redirectParams = [
+                'assessmentCode' => $assessment->assessment_code,
+            ];
+        });
+
+        return redirect()->route($redirectRoute, $redirectParams);
     }
 
     public function backToToken()

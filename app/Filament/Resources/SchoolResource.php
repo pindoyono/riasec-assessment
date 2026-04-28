@@ -134,14 +134,18 @@ class SchoolResource extends Resource
                     ->label('NPSN')
                     ->searchable()
                     ->copyable()
-                    ->copyMessage('NPSN disalin!'),
+                    ->copyableState(fn (?string $state): string => $state ?? '-')
+                    ->copyMessage('NPSN disalin!')
+                    ->copyMessageDuration(1500),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Sekolah')
                     ->searchable()
                     ->sortable()
                     ->copyable()
-                    ->copyMessage('Nama sekolah disalin!'),
+                    ->copyableState(fn (?string $state): string => $state ?? '-')
+                    ->copyMessage('Nama sekolah disalin!')
+                    ->copyMessageDuration(1500),
 
                 Tables\Columns\TextColumn::make('type')
                     ->label('Jenis')
@@ -156,7 +160,9 @@ class SchoolResource extends Resource
                     ->badge()
                     ->color(fn (School $record): string => $record->isTokenValid() ? 'success' : 'danger')
                     ->copyable()
+                    ->copyableState(fn (?string $state): string => $state ?? '-')
                     ->copyMessage('Token disalin!')
+                    ->copyMessageDuration(1500)
                     ->placeholder('Belum ada'),
 
                 Tables\Columns\TextColumn::make('token_expires_at')

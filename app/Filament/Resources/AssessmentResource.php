@@ -32,6 +32,27 @@ class AssessmentResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        $user = auth()->user();
+
+        return $user && $user->hasRole('super_admin');
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        $user = auth()->user();
+
+        return $user && $user->hasRole('super_admin');
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        $user = auth()->user();
+
+        return $user && $user->hasRole('super_admin');
+    }
+
     public static function form(Schema $form): Schema
     {
         return $form
@@ -273,6 +294,16 @@ class AssessmentResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
+                Actions\EditAction::make()
+                    ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') === true),
+                Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus Hasil Assessment?')
+                    ->modalDescription(fn (Assessment $record): string => "Data hasil assessment {$record->assessment_code} milik {$record->student?->name} akan dihapus permanen dan tidak dapat dikembalikan.")
+                    ->modalSubmitActionLabel('Ya, Hapus Sekarang')
+                    ->successNotificationTitle('Hasil assessment berhasil dihapus.')
+                    ->failureNotificationTitle('Gagal menghapus hasil assessment.')
+                    ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') === true),
                 Actions\Action::make('downloadPdf')
                     ->label('Download PDF')
                     ->icon('heroicon-o-document-arrow-down')
@@ -283,7 +314,14 @@ class AssessmentResource extends Resource
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make(),
+                    Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation()
+                        ->modalHeading('Hapus Data Assessment Terpilih?')
+                        ->modalDescription('Semua data assessment yang dipilih akan dihapus permanen dan tidak dapat dikembalikan.')
+                        ->modalSubmitActionLabel('Ya, Hapus Semua yang Dipilih')
+                        ->successNotificationTitle('Data assessment terpilih berhasil dihapus.')
+                        ->failureNotificationTitle('Gagal menghapus data assessment terpilih.')
+                        ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') === true),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -320,6 +358,7 @@ class AssessmentResource extends Resource
         return [
             'index' => Pages\ListAssessments::route('/'),
             'view' => Pages\ViewAssessment::route('/{record}'),
+            'edit' => Pages\EditAssessment::route('/{record}/edit'),
         ];
     }
 
