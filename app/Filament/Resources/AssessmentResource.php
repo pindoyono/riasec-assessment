@@ -194,15 +194,16 @@ class AssessmentResource extends Resource
                                     'C' => $record->score_c ?? 0,
                                 ];
 
-                                $riasecCodes = str_split($record->riasec_code ?? '');
+                                $allCodes = ['R', 'I', 'A', 'S', 'E', 'C'];
+                                $topCodes = str_split($record->riasec_code ?? '');
                                 $categories = RiasecCategory::query()
-                                    ->whereIn('code', $riasecCodes)
+                                    ->whereIn('code', $allCodes)
                                     ->get()
                                     ->keyBy('code');
                                 $majors = SmkMajor::active()->get();
 
-                                return collect($riasecCodes)
-                                    ->map(function (string $code) use ($categories, $majors, $scoreMap): array {
+                                return collect($allCodes)
+                                    ->map(function (string $code) use ($categories, $majors, $scoreMap, $topCodes): array {
                                         $category = $categories->get($code);
                                         $matchingMajors = $majors
                                             ->filter(fn (SmkMajor $major): bool => in_array($code, $major->riasec_profile ?? []))
@@ -215,14 +216,16 @@ class AssessmentResource extends Resource
                                             'name' => $category?->name ?? $code,
                                             'description' => $category?->description ?? '-',
                                             'score' => $scoreMap[$code] ?? 0,
+                                            'is_top' => in_array($code, $topCodes),
                                             'recommendation_count' => $matchingMajors->count(),
-                                            'recommendations' => $matchingMajors->take(12)->implode(' • '),
+                                            'recommendations' => $matchingMajors->implode(' • '),
                                         ];
                                     })
                                     ->all();
                             })
                             ->columnSpanFull(),
                     ])
+                    ->columnSpanFull()
                     ->visible(fn (Assessment $record): bool => $record->status === 'completed'),
             ]);
     }
