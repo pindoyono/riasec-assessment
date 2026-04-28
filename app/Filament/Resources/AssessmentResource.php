@@ -194,15 +194,19 @@ class AssessmentResource extends Resource
                                     'C' => $record->score_c ?? 0,
                                 ];
 
-                                $allCodes = ['R', 'I', 'A', 'S', 'E', 'C'];
-                                $topCodes = str_split($record->riasec_code ?? '');
+                                $topCodes = collect(str_split($record->riasec_code ?? ''))
+                                    ->filter(fn (string $code): bool => in_array($code, ['R', 'I', 'A', 'S', 'E', 'C']))
+                                    ->unique()
+                                    ->take(3)
+                                    ->values()
+                                    ->all();
                                 $categories = RiasecCategory::query()
-                                    ->whereIn('code', $allCodes)
+                                    ->whereIn('code', $topCodes)
                                     ->get()
                                     ->keyBy('code');
                                 $majors = SmkMajor::active()->get();
 
-                                return collect($allCodes)
+                                return collect($topCodes)
                                     ->map(function (string $code) use ($categories, $majors, $scoreMap, $topCodes): array {
                                         $category = $categories->get($code);
 
@@ -223,9 +227,9 @@ class AssessmentResource extends Resource
                                             'name' => $category?->name ?? $code,
                                             'description' => $category?->description ?? '-',
                                             'score' => $scoreMap[$code] ?? 0,
-                                            'is_top' => in_array($code, $topCodes),
+                                            'is_top' => true,
                                             'recommendation_count' => $matchingMajors->count(),
-                                            'recommendations' => $matchingMajors->take(3)->implode(' • '),
+                                            'recommendations' => $matchingMajors->implode(' • '),
                                         ];
                                     })
                                     ->all();
