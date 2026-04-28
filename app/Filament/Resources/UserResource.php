@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Schemas\Components\Section;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -119,10 +120,37 @@ class UserResource extends Resource
                     ->sortable()
                     ->placeholder('-'),
 
-                Tables\Columns\TextColumn::make('roles.name')
+                Tables\Columns\SelectColumn::make('current_role')
                     ->label('Role')
-                    ->badge()
-                    ->separator(','),
+                    ->getStateUsing(fn (User $record): ?string => $record->roles()->pluck('name')->first())
+                    ->options(fn (): array => Role::query()->orderBy('name')->pluck('name', 'name')->toArray())
+                    ->searchable()
+                    ->placeholder('-')
+                    ->rules(['required'])
+                    ->disabled(fn (): bool => auth()->user()?->hasRole('super_admin') !== true)
+                    ->updateStateUsing(function (User $record, ?string $state): ?string {
+                        if (auth()->user()?->hasRole('super_admin') !== true) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Hanya super admin yang dapat mengubah role pengguna.')
+                                ->danger()
+                                ->send();
+
+                            return $record->roles()->pluck('name')->first();
+                        }
+
+                        if (blank($state)) {
+                            return $record->roles()->pluck('name')->first();
+                        }
+
+                        $record->syncRoles([$state]);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Role pengguna berhasil diperbarui.')
+                            ->success()
+                            ->send();
+
+                        return $state;
+                    }),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Aktif')
