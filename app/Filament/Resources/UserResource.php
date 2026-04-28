@@ -16,6 +16,19 @@ use Spatie\Permission\Models\Role;
 use UnitEnum;
 
 class UserResource extends Resource
+    /**
+     * Batasi data pengguna yang tampil hanya milik user tersebut,
+     * kecuali superadmin bisa melihat semua.
+     */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
+        if (!$user?->hasRole('super_admin')) {
+            $query->where('id', $user->id);
+        }
+        return $query;
+    }
 {
     protected static ?string $model = User::class;
 
@@ -120,37 +133,44 @@ class UserResource extends Resource
                     ->sortable()
                     ->placeholder('-'),
 
-                Tables\Columns\SelectColumn::make('current_role')
-                    ->label('Role')
-                    ->getStateUsing(fn (User $record): ?string => $record->roles()->pluck('name')->first())
-                    ->options(fn (): array => Role::query()->orderBy('name')->pluck('name', 'name')->toArray())
-                    ->searchable()
-                    ->placeholder('-')
-                    ->rules(['required'])
-                    ->disabled(fn (): bool => auth()->user()?->hasRole('super_admin') !== true)
-                    ->updateStateUsing(function (User $record, ?string $state): ?string {
-                        if (auth()->user()?->hasRole('super_admin') !== true) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Hanya super admin yang dapat mengubah role pengguna.')
-                                ->danger()
-                                ->send();
+                // Kolom Role hanya untuk super_admin
+                ...(
+                    auth()->user()?->hasRole('super_admin')
+                        ? [
+                            Tables\Columns\SelectColumn::make('current_role')
+                                ->label('Role')
+                                ->getStateUsing(fn (User $record): ?string => $record->roles()->pluck('name')->first())
+                                ->options(fn (): array => Role::query()->orderBy('name')->pluck('name', 'name')->toArray())
+                                ->searchable()
+                                ->placeholder('-')
+                                ->rules(['required'])
+                                ->disabled(fn (): bool => auth()->user()?->hasRole('super_admin') !== true)
+                                ->updateStateUsing(function (User $record, ?string $state): ?string {
+                                    if (auth()->user()?->hasRole('super_admin') !== true) {
+                                        \Filament\Notifications\Notification::make()
+                                            ->title('Hanya super admin yang dapat mengubah role pengguna.')
+                                            ->danger()
+                                            ->send();
 
-                            return $record->roles()->pluck('name')->first();
-                        }
+                                        return $record->roles()->pluck('name')->first();
+                                    }
 
-                        if (blank($state)) {
-                            return $record->roles()->pluck('name')->first();
-                        }
+                                    if (blank($state)) {
+                                        return $record->roles()->pluck('name')->first();
+                                    }
 
-                        $record->syncRoles([$state]);
+                                    $record->syncRoles([$state]);
 
-                        \Filament\Notifications\Notification::make()
-                            ->title('Role pengguna berhasil diperbarui.')
-                            ->success()
-                            ->send();
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Role pengguna berhasil diperbarui.')
+                                        ->success()
+                                        ->send();
 
-                        return $state;
-                    }),
+                                    return $state;
+                                }),
+                        ]
+                        : []
+                ),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Aktif')
