@@ -16,6 +16,7 @@ use Spatie\Permission\Models\Role;
 use UnitEnum;
 
 class UserResource extends Resource
+{
     /**
      * Batasi data pengguna yang tampil hanya milik user tersebut,
      * kecuali superadmin bisa melihat semua.
@@ -29,7 +30,6 @@ class UserResource extends Resource
         }
         return $query;
     }
-{
     protected static ?string $model = User::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
