@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AssessmentResource\Pages;
 use App\Models\Assessment;
+use App\Models\RiasecCategory;
+use App\Models\SmkMajor;
 use Filament\Forms;
 use Filament\Infolists;
 use Filament\Resources\Resource;
@@ -94,10 +96,13 @@ class AssessmentResource extends Resource
                         Infolists\Components\TextEntry::make('student.nisn')
                             ->label('NISN'),
                         Infolists\Components\TextEntry::make('student.school.name')
-                            ->label('Asal Sekolah'),
+                            ->label('Lokasi Tempat Test'),
+                        Infolists\Components\TextEntry::make('student.asal_sekolah')
+                            ->label('Asal Sekolah')
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('student.class')
                             ->label('Kelas'),
-                    ])->columns(4),
+                    ])->columns(5),
 
                 Section::make('Informasi Assessment')
                     ->schema([
@@ -176,35 +181,47 @@ class AssessmentResource extends Resource
 
                 Section::make('Rekomendasi Jurusan SMK')
                     ->schema([
-                        Infolists\Components\RepeatableEntry::make('recommendations')
+                        Infolists\Components\ViewEntry::make('riasec_recommendation_summary')
                             ->label('')
-                            ->schema([
-                                Infolists\Components\TextEntry::make('rank')
-                                    ->label('Peringkat')
-                                    ->badge()
-                                    ->color(fn (int $state): string => match ($state) {
-                                        1 => 'success',
-                                        2 => 'info',
-                                        3 => 'warning',
-                                        default => 'gray',
-                                    }),
-                                Infolists\Components\TextEntry::make('match_percentage')
-                                    ->label('Kecocokan')
-                                    ->badge()
-                                    ->color('success'),
-                                Infolists\Components\TextEntry::make('smkMajor.name')
-                                    ->label('Kompetensi Keahlian')
-                                    ->columnSpanFull(),
-                                Infolists\Components\TextEntry::make('smkMajor.program_keahlian')
-                                    ->label('Program Keahlian')
-                                    ->placeholder('-')
-                                    ->columnSpanFull(),
-                                Infolists\Components\TextEntry::make('match_reason')
-                                    ->label('Alasan Kecocokan')
-                                    ->placeholder('-')
-                                    ->columnSpanFull(),
-                            ])
-                            ->columns(2),
+                            ->view('filament.infolists.assessment-riasec-summary')
+                            ->state(function (Assessment $record): array {
+                                $scoreMap = [
+                                    'R' => $record->score_r ?? 0,
+                                    'I' => $record->score_i ?? 0,
+                                    'A' => $record->score_a ?? 0,
+                                    'S' => $record->score_s ?? 0,
+                                    'E' => $record->score_e ?? 0,
+                                    'C' => $record->score_c ?? 0,
+                                ];
+
+                                $riasecCodes = str_split($record->riasec_code ?? '');
+                                $categories = RiasecCategory::query()
+                                    ->whereIn('code', $riasecCodes)
+                                    ->get()
+                                    ->keyBy('code');
+                                $majors = SmkMajor::active()->get();
+
+                                return collect($riasecCodes)
+                                    ->map(function (string $code) use ($categories, $majors, $scoreMap): array {
+                                        $category = $categories->get($code);
+                                        $matchingMajors = $majors
+                                            ->filter(fn (SmkMajor $major): bool => in_array($code, $major->riasec_profile ?? []))
+                                            ->pluck('name')
+                                            ->unique()
+                                            ->values();
+
+                                        return [
+                                            'code' => $code,
+                                            'name' => $category?->name ?? $code,
+                                            'description' => $category?->description ?? '-',
+                                            'score' => $scoreMap[$code] ?? 0,
+                                            'recommendation_count' => $matchingMajors->count(),
+                                            'recommendations' => $matchingMajors->take(12)->implode(' • '),
+                                        ];
+                                    })
+                                    ->all();
+                            })
+                            ->columnSpanFull(),
                     ])
                     ->visible(fn (Assessment $record): bool => $record->status === 'completed'),
             ]);
