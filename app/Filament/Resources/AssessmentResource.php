@@ -188,18 +188,23 @@ class AssessmentResource extends Resource
                                         3 => 'warning',
                                         default => 'gray',
                                     }),
-                                Infolists\Components\TextEntry::make('smkMajor.name')
-                                    ->label('Kompetensi Keahlian'),
-                                Infolists\Components\TextEntry::make('smkMajor.program_keahlian')
-                                    ->label('Program Keahlian'),
                                 Infolists\Components\TextEntry::make('match_percentage')
                                     ->label('Kecocokan')
                                     ->badge()
                                     ->color('success'),
+                                Infolists\Components\TextEntry::make('smkMajor.name')
+                                    ->label('Kompetensi Keahlian')
+                                    ->columnSpanFull(),
+                                Infolists\Components\TextEntry::make('smkMajor.program_keahlian')
+                                    ->label('Program Keahlian')
+                                    ->placeholder('-')
+                                    ->columnSpanFull(),
                                 Infolists\Components\TextEntry::make('match_reason')
-                                    ->label('Alasan'),
+                                    ->label('Alasan Kecocokan')
+                                    ->placeholder('-')
+                                    ->columnSpanFull(),
                             ])
-                            ->columns(5),
+                            ->columns(2),
                     ])
                     ->visible(fn (Assessment $record): bool => $record->status === 'completed'),
             ]);
