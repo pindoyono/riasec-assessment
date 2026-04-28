@@ -32,7 +32,7 @@ class RiasecAssessmentTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('RIASEC Assessment');
-        $response->assertSee('Token Lokasi');
+        $response->assertSee('Masukkan NISN');
     }
 
     public function test_riasec_categories_are_seeded(): void
@@ -171,10 +171,24 @@ class RiasecAssessmentTest extends TestCase
         $response = $this->get('/assessment');
         $response->assertStatus(200);
 
-        // Using Livewire to test - token must pass validation (6-10 chars)
+        $school = School::create([
+            'name' => 'Lokasi Test SMK',
+            'type' => 'smk',
+            'is_active' => true,
+        ]);
+
+        $student = Student::create([
+            'nisn' => '1234567890',
+            'name' => 'Test Student',
+            'gender' => 'L',
+            'school_id' => $school->id,
+        ]);
+
         \Livewire\Livewire::test(\App\Livewire\StudentLogin::class)
-            ->set('token', 'NOTFOUND')  // 8 chars, passes validation but doesn't exist
-            ->call('validateToken')
+            ->set('nisn', $student->nisn)
+            ->call('checkNisn')
+            ->set('token', 'NOTFOUND')
+            ->call('login')
             ->assertSet('error', 'Token tidak valid, sudah expired, atau tidak ditemukan.');
     }
 
@@ -196,10 +210,10 @@ class RiasecAssessmentTest extends TestCase
         ]);
 
         \Livewire\Livewire::test(\App\Livewire\StudentLogin::class)
-            ->set('token', $school->registration_token)
-            ->call('validateToken')
-            ->assertSet('tokenValidated', true)
             ->set('nisn', '1234567890')
+            ->call('checkNisn')
+            ->assertSet('nisnValidated', true)
+            ->set('token', $school->registration_token)
             ->call('login')
             ->assertRedirect();
 

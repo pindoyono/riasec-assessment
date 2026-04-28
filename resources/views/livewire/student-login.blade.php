@@ -6,74 +6,21 @@
         </div>
 
         <div class="p-6">
-            @if (!$tokenValidated)
-                {{-- Step 1: Token Validation --}}
+            @if (!$nisnValidated)
+                {{-- Step 1: NISN Input --}}
                 <div class="mb-6 text-center">
                     <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
                         <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                                d="M17 20h5V4H2v16h5m10 0v-4a3 3 0 00-3-3h-4a3 3 0 00-3 3v4m10 0H7m10-11a3 3 0 11-6 0 3 3 0 016 0z">
                             </path>
                         </svg>
                     </div>
-                    <h2 class="text-lg font-semibold text-gray-800">Masukkan Token Lokasi</h2>
-                    <p class="text-sm text-gray-500 mt-1">Token diberikan oleh panitia di lokasi test</p>
+                    <h2 class="text-lg font-semibold text-gray-800">Masukkan NISN</h2>
+                    <p class="text-sm text-gray-500 mt-1">Kami cek dulu data Anda sebelum meminta token lokasi test</p>
                 </div>
 
-                <form wire:submit="validateToken">
-                    @if ($error)
-                        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="text-red-700 text-sm">{{ $error }}</span>
-                            </div>
-                        </div>
-                    @endif
-
-                    <div class="mb-6">
-                        <label for="token" class="block text-sm font-medium text-gray-700 mb-2">Token Lokasi
-                            Test</label>
-                        <input type="text" id="token" wire:model="token"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center text-xl font-mono uppercase tracking-wider"
-                            placeholder="XXXXXXXX" maxlength="10" autocomplete="off">
-                        @error('token')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <button type="submit"
-                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
-                        wire:loading.attr="disabled" wire:loading.class="opacity-75 cursor-wait">
-                        <span wire:loading.remove>Validasi Token</span>
-                        <span wire:loading>Memproses...</span>
-                    </button>
-                </form>
-
-                <div class="mt-4 text-center">
-                    <p class="text-sm text-gray-500">Belum terdaftar?
-                        <a href="{{ route('assessment.register') }}"
-                            class="text-indigo-600 hover:text-indigo-700 font-semibold">Daftar di sini</a>
-                    </p>
-                </div>
-            @else
-                {{-- Step 2: NISN Input --}}
-                <div class="mb-6 text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-lg font-semibold text-gray-800">Token Valid!</h2>
-                    <p class="text-sm text-gray-500 mt-1">Lokasi: <span
-                            class="font-semibold text-indigo-600">{{ $school->name }}</span></p>
-                </div>
-
-                <form wire:submit="login">
+                <form wire:submit="checkNisn">
                     @if ($error)
                         <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                             <div class="flex items-center">
@@ -101,22 +48,68 @@
                     <button type="submit"
                         class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
                         wire:loading.attr="disabled" wire:loading.class="opacity-75 cursor-wait">
-                        <span wire:loading.remove>Masuk</span>
+                        <span wire:loading.remove>Lanjut</span>
                         <span wire:loading>Memproses...</span>
-                    </button>
-
-                    <button type="button" wire:click="backToToken"
-                        class="w-full mt-3 bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
-                        ← Kembali ke Token
                     </button>
                 </form>
 
                 <div class="mt-4 text-center">
-                    <p class="text-sm text-gray-500">Belum terdaftar?
+                    <p class="text-sm text-gray-500">NISN belum terdaftar?
                         <a href="{{ route('assessment.register') }}"
                             class="text-indigo-600 hover:text-indigo-700 font-semibold">Daftar di sini</a>
                     </p>
                 </div>
+            @else
+                {{-- Step 2: Token Validation --}}
+                <div class="mb-6 text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-semibold text-gray-800">Data Ditemukan</h2>
+                    <p class="text-sm text-gray-500 mt-1">Siswa: <span
+                            class="font-semibold text-indigo-600">{{ $student?->name }}</span></p>
+                </div>
+
+                <form wire:submit="login">
+                    @if ($error)
+                        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-red-700 text-sm">{{ $error }}</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="mb-6">
+                        <label for="token" class="block text-sm font-medium text-gray-700 mb-2">Token Lokasi
+                            Test</label>
+                        <input type="text" id="token" wire:model="token"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center text-xl font-mono uppercase tracking-wider"
+                            placeholder="XXXXXXXX" maxlength="10" autocomplete="off">
+                        @error('token')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+                        wire:loading.attr="disabled" wire:loading.class="opacity-75 cursor-wait">
+                        <span wire:loading.remove>Mulai Mengerjakan</span>
+                        <span wire:loading>Memproses...</span>
+                    </button>
+
+                    <button type="button" wire:click="backToNisn"
+                        class="w-full mt-3 bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
+                        ← Kembali ke NISN
+                    </button>
+                </form>
             @endif
         </div>
     </div>

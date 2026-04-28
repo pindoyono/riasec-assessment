@@ -28,6 +28,15 @@ class StudentRegistration extends Component
 
     public bool $registered = false;
 
+    public function mount(): void
+    {
+        $nisn = (string) request()->query('nisn', '');
+
+        if ($nisn !== '') {
+            $this->nisn = preg_replace('/\D/', '', $nisn) ?? '';
+        }
+    }
+
     public function register()
     {
         $this->validate([

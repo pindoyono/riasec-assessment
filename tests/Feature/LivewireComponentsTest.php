@@ -53,45 +53,51 @@ class LivewireComponentsTest extends TestCase
     {
         Livewire::test(StudentLogin::class)
             ->assertStatus(200)
-            ->assertSee('Token Lokasi');
+            ->assertSee('Masukkan NISN');
     }
 
-    public function test_student_login_validates_token_length(): void
+    public function test_student_login_validates_nisn_format(): void
     {
         Livewire::test(StudentLogin::class)
-            ->set('token', 'AB')  // Too short
-            ->call('validateToken')
-            ->assertHasErrors(['token' => 'min']);
+            ->set('nisn', '123')
+            ->call('checkNisn')
+            ->assertHasErrors(['nisn' => 'digits']);
     }
 
     public function test_student_login_shows_error_for_invalid_token(): void
-    {
-        Livewire::test(StudentLogin::class)
-            ->set('token', 'INVALID1')
-            ->call('validateToken')
-            ->assertSet('error', 'Token tidak valid, sudah expired, atau tidak ditemukan.');
-    }
-
-    public function test_student_login_validates_token_and_shows_nisn_form(): void
-    {
-        $school = $this->createSchoolWithToken();
-
-        Livewire::test(StudentLogin::class)
-            ->set('token', $school->registration_token)
-            ->call('validateToken')
-            ->assertSet('tokenValidated', true)
-            ->assertSee($school->name);
-    }
-
-    public function test_student_login_validates_nisn_against_school(): void
     {
         $school = $this->createSchoolWithToken();
         $student = $this->createStudentWithSchool($school);
 
         Livewire::test(StudentLogin::class)
-            ->set('token', $school->registration_token)
-            ->call('validateToken')
             ->set('nisn', $student->nisn)
+            ->call('checkNisn')
+            ->set('token', 'INVALID1')
+            ->call('login')
+            ->assertSet('error', 'Token tidak valid, sudah expired, atau tidak ditemukan.');
+    }
+
+    public function test_student_login_validates_nisn_and_shows_token_form(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        Livewire::test(StudentLogin::class)
+            ->set('nisn', $student->nisn)
+            ->call('checkNisn')
+            ->assertSet('nisnValidated', true)
+            ->assertSee('Token Lokasi');
+    }
+
+    public function test_student_login_creates_assessment_after_valid_nisn_and_token(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        Livewire::test(StudentLogin::class)
+            ->set('nisn', $student->nisn)
+            ->call('checkNisn')
+            ->set('token', $school->registration_token)
             ->call('login')
             ->assertRedirect();
 
@@ -102,14 +108,10 @@ class LivewireComponentsTest extends TestCase
 
     public function test_student_login_shows_error_for_invalid_nisn(): void
     {
-        $school = $this->createSchoolWithToken();
-
         Livewire::test(StudentLogin::class)
-            ->set('token', $school->registration_token)
-            ->call('validateToken')
             ->set('nisn', '9999999999')
-            ->call('login')
-            ->assertSet('error', 'NISN tidak ditemukan di lokasi test ini. Pastikan NISN benar dan Anda terdaftar di lokasi ini.');
+            ->call('checkNisn')
+            ->assertRedirect(route('assessment.register', ['nisn' => '9999999999']));
     }
 
     public function test_student_login_redirects_to_result_if_completed(): void
@@ -133,10 +135,8 @@ class LivewireComponentsTest extends TestCase
         ]);
 
         Livewire::test(StudentLogin::class)
-            ->set('token', $school->registration_token)
-            ->call('validateToken')
             ->set('nisn', $student->nisn)
-            ->call('login')
+            ->call('checkNisn')
             ->assertRedirect(route('assessment.result', ['assessmentCode' => $assessment->assessment_code]));
     }
 
@@ -152,9 +152,9 @@ class LivewireComponentsTest extends TestCase
         ]);
 
         Livewire::test(StudentLogin::class)
-            ->set('token', $school->registration_token)
-            ->call('validateToken')
             ->set('nisn', $student->nisn)
+            ->call('checkNisn')
+            ->set('token', $school->registration_token)
             ->call('login')
             ->assertRedirect(route('assessment.take', ['assessmentCode' => $existingAssessment->assessment_code]));
 
@@ -166,17 +166,19 @@ class LivewireComponentsTest extends TestCase
         );
     }
 
-    public function test_back_to_token_resets_state(): void
+    public function test_back_to_nisn_resets_state(): void
     {
         $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
 
         Livewire::test(StudentLogin::class)
-            ->set('token', $school->registration_token)
-            ->call('validateToken')
-            ->assertSet('tokenValidated', true)
-            ->call('backToToken')
-            ->assertSet('tokenValidated', false)
-            ->assertSet('nisn', '')
+            ->set('nisn', $student->nisn)
+            ->call('checkNisn')
+            ->assertSet('nisnValidated', true)
+            ->set('token', 'ABCDEF12')
+            ->call('backToNisn')
+            ->assertSet('nisnValidated', false)
+            ->assertSet('token', '')
             ->assertSet('error', '');
     }
 

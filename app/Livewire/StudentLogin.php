@@ -12,51 +12,21 @@ class StudentLogin extends Component
     public string $token = '';
     public string $nisn = '';
     public string $error = '';
-    public bool $tokenValidated = false;
+    public bool $nisnValidated = false;
+    public ?Student $student = null;
     public ?School $school = null;
 
-    public function validateToken()
-    {
-        $this->validate([
-            'token' => 'required|min:6|max:10',
-        ]);
-
-        $this->error = '';
-        $school = School::findByValidToken(strtoupper($this->token));
-
-        if (!$school) {
-            $this->error = 'Token tidak valid, sudah expired, atau tidak ditemukan.';
-            return;
-        }
-
-        $this->school = $school;
-        $this->tokenValidated = true;
-    }
-
-    public function login()
+    public function checkNisn()
     {
         $this->validate([
             'nisn' => 'required|digits:10',
         ]);
 
         $this->error = '';
-
-        // Re-validate school token
-        if (!$this->school || !$this->school->isTokenValid()) {
-            $this->error = 'Token sudah expired. Silakan minta token baru ke admin.';
-            $this->tokenValidated = false;
-            $this->school = null;
-            return;
-        }
-
-        // Find student by NISN and school
-        $student = Student::where('nisn', $this->nisn)
-            ->where('school_id', $this->school->id)
-            ->first();
+        $student = Student::where('nisn', $this->nisn)->first();
 
         if (!$student) {
-            $this->error = 'NISN tidak ditemukan di lokasi test ini. Pastikan NISN benar dan Anda terdaftar di lokasi ini.';
-            return;
+            return redirect()->route('assessment.register', ['nisn' => $this->nisn]);
         }
 
         if (!$student->is_active) {
@@ -64,13 +34,57 @@ class StudentLogin extends Component
             return;
         }
 
+        $completedAssessment = $student->assessments()
+            ->where('status', 'completed')
+            ->latest('completed_at')
+            ->latest('id')
+            ->first();
+
+        if ($completedAssessment) {
+            return redirect()->route('assessment.result', [
+                'assessmentCode' => $completedAssessment->assessment_code,
+            ]);
+        }
+
+        $this->student = $student;
+        $this->nisnValidated = true;
+    }
+
+    public function login()
+    {
+        $this->validate([
+            'token' => 'required|min:6|max:10',
+        ]);
+
+        $this->error = '';
+
+        if (!$this->student) {
+            $this->error = 'Silakan cek NISN terlebih dahulu.';
+            $this->nisnValidated = false;
+            return;
+        }
+
+        $school = School::findByValidToken(strtoupper($this->token));
+
+        if (!$school) {
+            $this->error = 'Token tidak valid, sudah expired, atau tidak ditemukan.';
+            return;
+        }
+
+        if ($this->student->school_id !== $school->id) {
+            $this->error = 'Token tidak sesuai dengan lokasi test siswa ini.';
+            return;
+        }
+
+        $this->school = $school;
+
         $redirectRoute = 'assessment.take';
         $redirectParams = [];
 
-        DB::transaction(function () use ($student, &$redirectRoute, &$redirectParams) {
+        DB::transaction(function () use (&$redirectRoute, &$redirectParams) {
             // Lock student row to prevent race condition from concurrent login requests.
             $lockedStudent = Student::query()
-                ->whereKey($student->id)
+                ->whereKey($this->student->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
@@ -109,11 +123,12 @@ class StudentLogin extends Component
         return redirect()->route($redirectRoute, $redirectParams);
     }
 
-    public function backToToken()
+    public function backToNisn()
     {
-        $this->tokenValidated = false;
+        $this->nisnValidated = false;
         $this->school = null;
-        $this->nisn = '';
+        $this->student = null;
+        $this->token = '';
         $this->error = '';
     }
 
