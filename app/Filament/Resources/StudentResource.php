@@ -38,12 +38,14 @@ class StudentResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('nisn')
                             ->label('NISN')
-                            ->numeric()
-                            ->length(10)
+                            ->formatStateUsing(fn (?string $state): string => str_pad((string) ($state ?? ''), 10, '0', STR_PAD_LEFT))
+                            ->dehydrateStateUsing(fn (?string $state): string => preg_replace('/\D/', '', (string) $state) ?? '')
+                            ->rule('regex:/^\d{10}$/')
+                            ->maxLength(10)
                             ->unique(ignoreRecord: true)
+                            ->inputMode('numeric')
                             ->validationMessages([
-                                'numeric' => 'NISN harus berupa angka.',
-                                'size' => 'NISN harus 10 digit.',
+                                'regex' => 'NISN harus 10 digit angka.',
                             ]),
 
                         Forms\Components\TextInput::make('name')
