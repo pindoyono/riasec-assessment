@@ -26,6 +26,23 @@ class ActivityLogResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
+    protected static function isSuperAdmin(): bool
+    {
+        $user = auth()->user();
+
+        return $user && $user->hasRole('super_admin');
+    }
+
+    public static function canAccess(): bool
+    {
+        return static::isSuperAdmin();
+    }
+
+    public static function canViewAny(): bool
+    {
+        return static::isSuperAdmin();
+    }
+
     public static function canCreate(): bool
     {
         return false;
