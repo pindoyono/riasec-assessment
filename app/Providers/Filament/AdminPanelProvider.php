@@ -32,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->favicon(asset('favicon.ico'))
-            ->brandName('Assessment Minat Bakat SMK Kaltara')
+                ->brandName('Assesment Minat Bakat SMK Kaltara')
             ->colors([
                 'primary' => Color::Amber,
             ])
