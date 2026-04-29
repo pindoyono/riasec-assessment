@@ -1,6 +1,6 @@
 <div class="fi-wi-info-widget">
     <div class="fi-wi-info-widget-header">
-        <span class="fi-wi-info-widget-title" style="font-size: 2rem; font-weight: bold;">Assesment Minat Bakat SMK
+        <span class="fi-wi-info-widget-title" style="font-size: 2rem; font-weight: bold;">ABM SMK
             Kaltara</span>
     </div>
     <div class="fi-wi-info-widget-links" style="margin-top: 1rem;">
