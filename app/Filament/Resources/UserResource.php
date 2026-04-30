@@ -143,7 +143,7 @@ class UserResource extends Resource
                                 ->label('Role')
                                 ->getStateUsing(fn (User $record): ?string => $record->roles()->pluck('name')->first())
                                 ->options(fn (): array => Role::query()->orderBy('name')->pluck('name', 'name')->toArray())
-                                ->searchable()
+                                // ->searchable()
                                 ->placeholder('-')
                                 ->rules(['required'])
                                 ->disabled(fn (): bool => auth()->user()?->hasRole('super_admin') !== true)
