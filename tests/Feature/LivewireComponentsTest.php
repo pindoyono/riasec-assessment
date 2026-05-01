@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Livewire\AssessmentResult;
 use App\Livewire\StudentLogin;
 use App\Livewire\TakeAssessment;
+use App\Livewire\TakeForcedChoiceAssessment;
 use App\Models\Assessment;
+use App\Models\ForcedChoiceAssessmentAnswer;
+use App\Models\ForcedChoiceQuestion;
 use App\Models\Question;
 use App\Models\School;
 use App\Models\Student;
@@ -24,6 +27,7 @@ class LivewireComponentsTest extends TestCase
         $this->seed(\Database\Seeders\RiasecCategorySeeder::class);
         $this->seed(\Database\Seeders\QuestionSeeder::class);
         $this->seed(\Database\Seeders\SmkMajorSeeder::class);
+        $this->seed(\Database\Seeders\ForcedChoiceQuestionSeeder::class);
     }
 
     protected function createSchoolWithToken(): School
@@ -47,6 +51,22 @@ class LivewireComponentsTest extends TestCase
             'gender' => 'L',
             'school_id' => $school->id,
         ]);
+    }
+
+    /** Create FC answers for all active questions (all choosing option A). */
+    protected function createFcAnswersForAssessment(Assessment $assessment): void
+    {
+        $questions = ForcedChoiceQuestion::getForAssessment();
+
+        foreach ($questions as $question) {
+            ForcedChoiceAssessmentAnswer::create([
+                'assessment_id'             => $assessment->id,
+                'forced_choice_question_id' => $question->id,
+                'selected_option'           => 'A',
+                'selected_type'             => $question->option_a_type,
+                'answered_at'               => now(),
+            ]);
+        }
     }
 
     public function test_student_login_component_renders(): void
@@ -119,7 +139,7 @@ class LivewireComponentsTest extends TestCase
         $school = $this->createSchoolWithToken();
         $student = $this->createStudentWithSchool($school);
 
-        // Create completed assessment
+        // Create completed assessment WITH forced choice answers
         $assessment = Assessment::create([
             'student_id' => $student->id,
             'assessment_code' => 'ASM-COMPLETE1',
@@ -133,6 +153,7 @@ class LivewireComponentsTest extends TestCase
             'score_c' => 80,
             'riasec_code' => 'RIA',
         ]);
+        $this->createFcAnswersForAssessment($assessment);
 
         Livewire::test(StudentLogin::class)
             ->set('nisn', $student->nisn)
@@ -214,6 +235,7 @@ class LivewireComponentsTest extends TestCase
             'score_c' => 80,
             'riasec_code' => 'RIA',
         ]);
+        $this->createFcAnswersForAssessment($assessment);
 
         Livewire::test(TakeAssessment::class, ['assessmentCode' => $assessment->assessment_code])
             ->assertRedirect(route('assessment.result', ['assessmentCode' => $assessment->assessment_code]));
@@ -305,10 +327,10 @@ class LivewireComponentsTest extends TestCase
             $component->call('answerQuestion', $question->id, 4);
         }
 
-        // Should redirect to result
-        $component->assertRedirect(route('assessment.result', ['assessmentCode' => $assessment->assessment_code]));
+        // Should redirect to forced choice (next step after Likert)
+        $component->assertRedirect(route('assessment.forced-choice.take', ['assessmentCode' => $assessment->assessment_code]));
 
-        // Verify assessment is completed
+        // Verify Likert assessment is completed
         $assessment->refresh();
         $this->assertEquals('completed', $assessment->status);
         $this->assertNotNull($assessment->riasec_code);
@@ -331,6 +353,7 @@ class LivewireComponentsTest extends TestCase
             'score_c' => 65,
             'riasec_code' => 'RES',
         ]);
+        $this->createFcAnswersForAssessment($assessment);
 
         Livewire::test(AssessmentResult::class, ['assessmentCode' => $assessment->assessment_code])
             ->assertStatus(200)
@@ -370,6 +393,7 @@ class LivewireComponentsTest extends TestCase
             'score_c' => 65,
             'riasec_code' => 'RES',
         ]);
+        $this->createFcAnswersForAssessment($assessment);
 
         $component = Livewire::test(AssessmentResult::class, ['assessmentCode' => $assessment->assessment_code]);
 
@@ -432,5 +456,188 @@ class LivewireComponentsTest extends TestCase
 
         $component = Livewire::test(TakeAssessment::class, ['assessmentCode' => $assessment->assessment_code]);
         $this->assertEquals(50, $component->get('progressPercentage'));
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Forced Choice Tests
+    // ────────────────────────────────────────────────────────────────────────
+
+    public function test_student_login_redirects_to_fc_when_likert_done_but_no_fc(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        Assessment::create([
+            'student_id'     => $student->id,
+            'assessment_code' => 'ASM-NO-FC',
+            'status'         => 'completed',
+            'completed_at'   => now(),
+            'score_r' => 80, 'score_i' => 80, 'score_a' => 80,
+            'score_s' => 80, 'score_e' => 80, 'score_c' => 80,
+            'riasec_code' => 'RIA',
+        ]);
+
+        // No FC answers — should redirect to forced-choice step
+        Livewire::test(StudentLogin::class)
+            ->set('nisn', $student->nisn)
+            ->call('checkNisn')
+            ->assertRedirect(route('assessment.forced-choice.take', ['assessmentCode' => 'ASM-NO-FC']));
+    }
+
+    public function test_take_assessment_redirects_to_fc_when_completed_no_fc(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        $assessment = Assessment::create([
+            'student_id'     => $student->id,
+            'assessment_code' => 'ASM-FC-REDIR',
+            'status'         => 'completed',
+            'completed_at'   => now(),
+            'score_r' => 80, 'score_i' => 80, 'score_a' => 80,
+            'score_s' => 80, 'score_e' => 80, 'score_c' => 80,
+            'riasec_code' => 'RIA',
+        ]);
+        // No FC answers
+
+        Livewire::test(TakeAssessment::class, ['assessmentCode' => $assessment->assessment_code])
+            ->assertRedirect(route('assessment.forced-choice.take', ['assessmentCode' => $assessment->assessment_code]));
+    }
+
+    public function test_assessment_result_redirects_to_fc_if_fc_not_done(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        $assessment = Assessment::create([
+            'student_id'     => $student->id,
+            'assessment_code' => 'ASM-RESULT-FC',
+            'status'         => 'completed',
+            'completed_at'   => now(),
+            'score_r' => 85, 'score_i' => 70, 'score_a' => 60,
+            'score_s' => 75, 'score_e' => 80, 'score_c' => 65,
+            'riasec_code' => 'RES',
+        ]);
+        // No FC answers — result page must redirect to FC
+
+        Livewire::test(AssessmentResult::class, ['assessmentCode' => $assessment->assessment_code])
+            ->assertRedirect(route('assessment.forced-choice.take', ['assessmentCode' => $assessment->assessment_code]));
+    }
+
+    public function test_take_forced_choice_component_renders(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        $assessment = Assessment::create([
+            'student_id'     => $student->id,
+            'assessment_code' => 'ASM-FC-RENDER',
+            'status'         => 'completed',
+            'completed_at'   => now(),
+            'score_r' => 80, 'score_i' => 80, 'score_a' => 80,
+            'score_s' => 80, 'score_e' => 80, 'score_c' => 80,
+            'riasec_code' => 'RIA',
+        ]);
+
+        Livewire::test(TakeForcedChoiceAssessment::class, ['assessmentCode' => $assessment->assessment_code])
+            ->assertStatus(200)
+            ->assertSee($student->name);
+    }
+
+    public function test_take_forced_choice_can_answer_question(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        $assessment = Assessment::create([
+            'student_id'     => $student->id,
+            'assessment_code' => 'ASM-FC-ANS',
+            'status'         => 'completed',
+            'completed_at'   => now(),
+            'score_r' => 80, 'score_i' => 80, 'score_a' => 80,
+            'score_s' => 80, 'score_e' => 80, 'score_c' => 80,
+            'riasec_code' => 'RIA',
+        ]);
+
+        $question = ForcedChoiceQuestion::first();
+
+        Livewire::test(TakeForcedChoiceAssessment::class, ['assessmentCode' => $assessment->assessment_code])
+            ->call('answerQuestion', $question->id, 'A')
+            ->assertSet('currentIndex', 1);
+
+        $this->assertDatabaseHas('forced_choice_assessment_answers', [
+            'assessment_id'             => $assessment->id,
+            'forced_choice_question_id' => $question->id,
+            'selected_option'           => 'A',
+        ]);
+    }
+
+    public function test_take_forced_choice_ignores_invalid_option(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        $assessment = Assessment::create([
+            'student_id'     => $student->id,
+            'assessment_code' => 'ASM-FC-INVALID',
+            'status'         => 'completed',
+            'completed_at'   => now(),
+            'score_r' => 80, 'score_i' => 80, 'score_a' => 80,
+            'score_s' => 80, 'score_e' => 80, 'score_c' => 80,
+            'riasec_code' => 'RIA',
+        ]);
+
+        $question = ForcedChoiceQuestion::first();
+
+        Livewire::test(TakeForcedChoiceAssessment::class, ['assessmentCode' => $assessment->assessment_code])
+            ->call('answerQuestion', $question->id, 'X')  // invalid
+            ->assertSet('currentIndex', 0);              // should not advance
+
+        $this->assertDatabaseMissing('forced_choice_assessment_answers', [
+            'assessment_id'             => $assessment->id,
+            'forced_choice_question_id' => $question->id,
+        ]);
+    }
+
+    public function test_take_forced_choice_saves_combined_scores_on_complete(): void
+    {
+        $school = $this->createSchoolWithToken();
+        $student = $this->createStudentWithSchool($school);
+
+        $assessment = Assessment::create([
+            'student_id'     => $student->id,
+            'assessment_code' => 'ASM-FC-COMBINED',
+            'status'         => 'completed',
+            'completed_at'   => now(),
+            'score_r' => 60.0, 'score_i' => 70.0, 'score_a' => 50.0,
+            'score_s' => 80.0, 'score_e' => 40.0, 'score_c' => 90.0,
+            'riasec_code'    => 'CSI',
+        ]);
+
+        $component = Livewire::test(
+            TakeForcedChoiceAssessment::class,
+            ['assessmentCode' => $assessment->assessment_code]
+        );
+
+        // Answer all FC questions with option A
+        foreach (ForcedChoiceQuestion::getForAssessment() as $question) {
+            $component->call('answerQuestion', $question->id, 'A');
+        }
+
+        // Complete FC — triggers combined score calculation
+        $component->call('completeAssessment')
+            ->assertRedirect(route('assessment.result', ['assessmentCode' => $assessment->assessment_code]));
+
+        $assessment->refresh();
+
+        // Scores must be within valid range
+        foreach (['score_r', 'score_i', 'score_a', 'score_s', 'score_e', 'score_c'] as $col) {
+            $this->assertGreaterThanOrEqual(0, $assessment->$col);
+            $this->assertLessThanOrEqual(100, $assessment->$col);
+        }
+
+        // RIASEC code must be 3 letters
+        $this->assertEquals(3, strlen($assessment->riasec_code));
+        $this->assertMatchesRegularExpression('/^[RIASEC]{3}$/', $assessment->riasec_code);
     }
 }

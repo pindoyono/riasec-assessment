@@ -72,7 +72,7 @@
                             <div class="flex justify-between mb-1">
                                 <span class="text-sm font-medium text-gray-700">{{ $score['name'] }}</span>
                                 <span class="text-sm font-bold text-indigo-600">
-                                    {{ $score['score'] }}%
+                                    {{ number_format($score['score'], 1) }}%
                                 </span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">

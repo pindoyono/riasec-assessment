@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\RiasecCategory;
 use App\Models\SmkMajor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class KaltaraDataSeeder extends Seeder
 {
@@ -41,7 +42,9 @@ class KaltaraDataSeeder extends Seeder
         // ============================================================
         // 2. Clear and re-seed SmkMajor with KALTARA data
         // ============================================================
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
         SmkMajor::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $majors = [
             // ======= REALISTIC =======

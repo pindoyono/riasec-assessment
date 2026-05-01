@@ -5,6 +5,7 @@ use App\Livewire\AssessmentResult;
 use App\Livewire\StudentLogin;
 use App\Livewire\StudentRegistration;
 use App\Livewire\TakeAssessment;
+use App\Livewire\TakeForcedChoiceAssessment;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,3 +19,6 @@ Route::get('/assessment/take/{assessmentCode}', TakeAssessment::class)->name('as
 Route::get('/assessment/result/{assessmentCode}', AssessmentResult::class)->name('assessment.result');
 Route::get('/assessment/pdf/{assessment}', [AssessmentPdfController::class, 'download'])->name('assessment.pdf');
 Route::get('/assessment/pdf-preview/{assessment}', [AssessmentPdfController::class, 'preview'])->name('assessment.pdf.preview');
+
+// Forced Choice routes
+Route::get('/assessment/forced-choice/{assessmentCode}', TakeForcedChoiceAssessment::class)->name('assessment.forced-choice.take');

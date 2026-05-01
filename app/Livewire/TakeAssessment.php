@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Assessment;
 use App\Models\AssessmentAnswer;
+use App\Models\ForcedChoiceAssessmentAnswer;
 use App\Models\Question;
 use Livewire\Component;
 use Illuminate\Support\Collection;
@@ -22,8 +23,16 @@ class TakeAssessment extends Component
             ->with('student')
             ->firstOrFail();
 
-        // If already completed, redirect to result
+        // If already completed, redirect to forced choice (if not done) or result
         if ($this->assessment->status === 'completed') {
+            $hasFc = ForcedChoiceAssessmentAnswer::where('assessment_id', $this->assessment->id)->exists();
+
+            if (!$hasFc) {
+                return redirect()->route('assessment.forced-choice.take', [
+                    'assessmentCode' => $this->assessment->assessment_code,
+                ]);
+            }
+
             return redirect()->route('assessment.result', [
                 'assessmentCode' => $this->assessment->assessment_code,
             ]);
@@ -118,12 +127,12 @@ class TakeAssessment extends Component
             return;
         }
 
-        // Complete the assessment
+        // Complete the assessment (calculates Likert scores)
         $this->assessment->complete();
         $this->isCompleted = true;
 
-        // Redirect to result
-        return redirect()->route('assessment.result', [
+        // Redirect to forced choice assessment next
+        return redirect()->route('assessment.forced-choice.take', [
             'assessmentCode' => $this->assessment->assessment_code,
         ]);
     }

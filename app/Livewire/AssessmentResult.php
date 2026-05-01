@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Assessment;
+use App\Models\ForcedChoiceAssessmentAnswer;
 use App\Models\RiasecCategory;
 use App\Models\SmkMajor;
 use Livewire\Component;
@@ -20,9 +21,17 @@ class AssessmentResult extends Component
             ->with(['student.school', 'recommendations.smkMajor'])
             ->firstOrFail();
 
-        // If not completed, redirect to assessment
+        // If not completed, redirect back to Likert
         if ($this->assessment->status !== 'completed') {
             return redirect()->route('assessment.take', [
+                'assessmentCode' => $this->assessment->assessment_code,
+            ]);
+        }
+
+        // If completed but forced choice not done yet, redirect to forced choice
+        $hasForcedChoice = ForcedChoiceAssessmentAnswer::where('assessment_id', $this->assessment->id)->exists();
+        if (!$hasForcedChoice) {
+            return redirect()->route('assessment.forced-choice.take', [
                 'assessmentCode' => $this->assessment->assessment_code,
             ]);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\ForcedChoiceAssessmentAnswer;
 use App\Models\School;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,14 @@ class StudentLogin extends Component
             ->first();
 
         if ($completedAssessment) {
+            $hasForcedChoice = ForcedChoiceAssessmentAnswer::where('assessment_id', $completedAssessment->id)->exists();
+
+            if (!$hasForcedChoice) {
+                return redirect()->route('assessment.forced-choice.take', [
+                    'assessmentCode' => $completedAssessment->assessment_code,
+                ]);
+            }
+
             return redirect()->route('assessment.result', [
                 'assessmentCode' => $completedAssessment->assessment_code,
             ]);
@@ -95,10 +104,16 @@ class StudentLogin extends Component
                 ->first();
 
             if ($completedAssessment) {
-                $redirectRoute = 'assessment.result';
-                $redirectParams = [
-                    'assessmentCode' => $completedAssessment->assessment_code,
-                ];
+                // Check if forced choice was also completed
+                $hasForcedChoice = ForcedChoiceAssessmentAnswer::where('assessment_id', $completedAssessment->id)->exists();
+
+                if (!$hasForcedChoice) {
+                    $redirectRoute = 'assessment.forced-choice.take';
+                    $redirectParams = ['assessmentCode' => $completedAssessment->assessment_code];
+                } else {
+                    $redirectRoute = 'assessment.result';
+                    $redirectParams = ['assessmentCode' => $completedAssessment->assessment_code];
+                }
                 return;
             }
 

@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use App\Models\Assessment;
+use App\Models\ForcedChoiceAssessmentAnswer;
+use App\Models\ForcedChoiceQuestion;
 use App\Models\Question;
 use App\Models\RiasecCategory;
 use App\Models\School;
@@ -22,6 +24,7 @@ class ModelsTest extends TestCase
         $this->seed(\Database\Seeders\RiasecCategorySeeder::class);
         $this->seed(\Database\Seeders\QuestionSeeder::class);
         $this->seed(\Database\Seeders\SmkMajorSeeder::class);
+        $this->seed(\Database\Seeders\ForcedChoiceQuestionSeeder::class);
     }
 
     public function test_student_can_be_found_by_token(): void
@@ -345,5 +348,113 @@ class ModelsTest extends TestCase
         $this->assertEquals(60, $scores['S']);
         $this->assertEquals(50, $scores['E']);
         $this->assertEquals(40, $scores['C']);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Forced Choice Model Tests
+    // ────────────────────────────────────────────────────────────────────────
+
+    public function test_fc_calculate_scores_returns_type_counts(): void
+    {
+        $school = School::create(['name' => 'FC School', 'type' => 'smk', 'is_active' => true]);
+        $student = Student::create(['name' => 'FC Student', 'gender' => 'L', 'school_id' => $school->id]);
+        $assessment = Assessment::create(['student_id' => $student->id, 'status' => 'completed']);
+
+        $questions = ForcedChoiceQuestion::getForAssessment();
+        $this->assertGreaterThan(0, $questions->count(), '30 FC questions must be seeded');
+
+        // Answer all questions with option A
+        foreach ($questions as $question) {
+            ForcedChoiceAssessmentAnswer::create([
+                'assessment_id'             => $assessment->id,
+                'forced_choice_question_id' => $question->id,
+                'selected_option'           => 'A',
+                'selected_type'             => $question->option_a_type,
+                'answered_at'               => now(),
+            ]);
+        }
+
+        $scores = ForcedChoiceAssessmentAnswer::calculateScores($assessment->id);
+
+        $this->assertArrayHasKey('R', $scores);
+        $this->assertArrayHasKey('I', $scores);
+        $this->assertArrayHasKey('A', $scores);
+        $this->assertArrayHasKey('S', $scores);
+        $this->assertArrayHasKey('E', $scores);
+        $this->assertArrayHasKey('C', $scores);
+
+        // Sum of all type counts must equal total number of answers
+        $this->assertEquals($questions->count(), array_sum($scores));
+    }
+
+    public function test_fc_normalized_scores_sum_to_100(): void
+    {
+        $school = School::create(['name' => 'FC School 2', 'type' => 'smk', 'is_active' => true]);
+        $student = Student::create(['name' => 'FC Student 2', 'gender' => 'L', 'school_id' => $school->id]);
+        $assessment = Assessment::create(['student_id' => $student->id, 'status' => 'completed']);
+
+        foreach (ForcedChoiceQuestion::getForAssessment() as $question) {
+            ForcedChoiceAssessmentAnswer::create([
+                'assessment_id'             => $assessment->id,
+                'forced_choice_question_id' => $question->id,
+                'selected_option'           => 'B',
+                'selected_type'             => $question->option_b_type,
+                'answered_at'               => now(),
+            ]);
+        }
+
+        $normalized = ForcedChoiceAssessmentAnswer::calculateNormalizedScores($assessment->id);
+
+        // Each value should be 0-100
+        foreach ($normalized as $type => $value) {
+            $this->assertGreaterThanOrEqual(0, $value);
+            $this->assertLessThanOrEqual(100, $value);
+        }
+
+        // Sum should be ~100 (allow rounding tolerance)
+        $this->assertEqualsWithDelta(100.0, array_sum($normalized), 1.0);
+    }
+
+    public function test_fc_normalized_scores_return_zeros_when_no_answers(): void
+    {
+        $school = School::create(['name' => 'FC School 3', 'type' => 'smk', 'is_active' => true]);
+        $student = Student::create(['name' => 'FC Student 3', 'gender' => 'L', 'school_id' => $school->id]);
+        $assessment = Assessment::create(['student_id' => $student->id, 'status' => 'completed']);
+
+        $normalized = ForcedChoiceAssessmentAnswer::calculateNormalizedScores($assessment->id);
+
+        foreach ($normalized as $value) {
+            $this->assertEquals(0, $value);
+        }
+    }
+
+    public function test_fc_combine_scores_weighted_average(): void
+    {
+        $likert = ['R' => 80.0, 'I' => 60.0, 'A' => 40.0, 'S' => 70.0, 'E' => 50.0, 'C' => 90.0];
+        $fc     = ['R' => 30.0, 'I' => 20.0, 'A' => 10.0, 'S' => 15.0, 'E' => 5.0,  'C' => 20.0];
+
+        $combined = ForcedChoiceAssessmentAnswer::combineScores($likert, $fc);
+
+        // R = 80*0.6 + 30*0.4 = 48 + 12 = 60
+        $this->assertEqualsWithDelta(60.0, $combined['R'], 0.1);
+        // C = 90*0.6 + 20*0.4 = 54 + 8 = 62
+        $this->assertEqualsWithDelta(62.0, $combined['C'], 0.1);
+
+        // All values should be within 0-100
+        foreach ($combined as $value) {
+            $this->assertGreaterThanOrEqual(0, $value);
+            $this->assertLessThanOrEqual(100, $value);
+        }
+    }
+
+    public function test_fc_get_riasec_code_returns_top_3(): void
+    {
+        $scores = ['R' => 10, 'I' => 5, 'A' => 8, 'S' => 3, 'E' => 7, 'C' => 2];
+
+        $code = ForcedChoiceAssessmentAnswer::getRiasecCode($scores);
+
+        $this->assertEquals(3, strlen($code));
+        // Top 3 are R=10, A=8, E=7
+        $this->assertEquals('RAE', $code);
     }
 }
