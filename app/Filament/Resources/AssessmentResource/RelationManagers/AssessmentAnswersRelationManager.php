@@ -106,7 +106,7 @@ class AssessmentAnswersRelationManager extends RelationManager
                     ->dateTime('d M Y H:i')
                     ->sortable(),
             ])
-            ->defaultSort('question.order')
+            ->defaultSort('id')
             ->actions([
                 Actions\EditAction::make()
                     ->visible(fn () => auth()->user()?->hasRole('super_admin'))

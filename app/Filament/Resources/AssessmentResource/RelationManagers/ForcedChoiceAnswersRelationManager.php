@@ -79,7 +79,6 @@ class ForcedChoiceAnswersRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('question.order')
                     ->label('No')
-                    ->sortable()
                     ->width(50),
 
                 Tables\Columns\TextColumn::make('question.option_a_text')
@@ -113,7 +112,7 @@ class ForcedChoiceAnswersRelationManager extends RelationManager
                     ->dateTime('d M Y H:i')
                     ->sortable(),
             ])
-            ->defaultSort('question.order')
+            ->defaultSort('id')
             ->actions([
                 Actions\EditAction::make()
                     ->visible(fn () => auth()->user()?->hasRole('super_admin'))

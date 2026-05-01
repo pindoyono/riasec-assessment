@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AssessmentResource\Pages;
+use App\Filament\Resources\AssessmentResource\RelationManagers\AssessmentAnswersRelationManager;
+use App\Filament\Resources\AssessmentResource\RelationManagers\ForcedChoiceAnswersRelationManager;
 use App\Models\Assessment;
 use App\Models\RiasecCategory;
 use App\Models\SmkMajor;
@@ -366,8 +368,8 @@ class AssessmentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\AssessmentAnswersRelationManager::class,
-            RelationManagers\ForcedChoiceAnswersRelationManager::class,
+            AssessmentAnswersRelationManager::class,
+            ForcedChoiceAnswersRelationManager::class,
         ];
     }
 

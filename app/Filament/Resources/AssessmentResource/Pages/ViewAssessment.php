@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\AssessmentResource\Pages;
 
 use App\Filament\Resources\AssessmentResource;
+use App\Filament\Resources\AssessmentResource\RelationManagers\AssessmentAnswersRelationManager;
+use App\Filament\Resources\AssessmentResource\RelationManagers\ForcedChoiceAnswersRelationManager;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -31,5 +33,17 @@ class ViewAssessment extends ViewRecord
                 ->url(fn (): string => route('assessment.pdf', $this->record->assessment_code))
                 ->openUrlInNewTab(),
         ];
+    }
+
+    public function getRelationManagers(): array
+    {
+        if (auth()->user()?->hasRole('super_admin')) {
+            return [
+                AssessmentAnswersRelationManager::class,
+                ForcedChoiceAnswersRelationManager::class,
+            ];
+        }
+
+        return [];
     }
 }
