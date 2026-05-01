@@ -94,6 +94,14 @@ class Assessment extends Model
     }
 
     /**
+     * Get the forced choice answers.
+     */
+    public function forcedChoiceAnswers(): HasMany
+    {
+        return $this->hasMany(ForcedChoiceAssessmentAnswer::class);
+    }
+
+    /**
      * Get the recommendations.
      */
     public function recommendations(): HasMany
