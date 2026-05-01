@@ -11,7 +11,11 @@ use App\Models\RiasecCategory;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\ForcedChoiceQuestionSeeder;
+use Database\Seeders\QuestionSeeder;
+use Database\Seeders\RiasecCategorySeeder;
+use Database\Seeders\SmkMajorSeeder;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -26,7 +30,10 @@ use Tests\TestCase;
  */
 class SuperAdminAnswerManagementTest extends TestCase
 {
-    use RefreshDatabase;
+    // DatabaseTransactions: setiap test dibungkus transaction → di-rollback otomatis.
+    // Tidak perlu RefreshDatabase karena riasec_testing sudah di-sync dari riasec
+    // (termasuk roles, permissions, categories, questions, dll).
+    use DatabaseTransactions;
 
     protected School $school;
     protected Student $student;
@@ -36,37 +43,51 @@ class SuperAdminAnswerManagementTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed(\Database\Seeders\RiasecCategorySeeder::class);
-        $this->seed(\Database\Seeders\QuestionSeeder::class);
-        $this->seed(\Database\Seeders\SmkMajorSeeder::class);
-        $this->seed(\Database\Seeders\ForcedChoiceQuestionSeeder::class);
+        // Clear Spatie permission cache (bisa stale setelah RefreshDatabase di test lain)
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        // Pastikan role super_admin ada (test lain yang pakai RefreshDatabase bisa menghapusnya)
+        if (!Role::where('name', 'super_admin')->where('guard_name', 'web')->exists()) {
+            Role::create(['name' => 'super_admin', 'guard_name' => 'web']);
+        }
+
+        // Pastikan data referensi ada (bisa hilang akibat RefreshDatabase di test lain)
+        if (RiasecCategory::count() === 0) {
+            $this->seed(RiasecCategorySeeder::class);
+        }
+        if (Question::count() === 0) {
+            $this->seed(QuestionSeeder::class);
+        }
+        if (ForcedChoiceQuestion::count() === 0) {
+            $this->seed(ForcedChoiceQuestionSeeder::class);
+        }
 
         $this->school = School::create([
-            'name'      => 'SMK Test',
+            'name'      => 'SMK Test (SuperAdmin Test)',
             'type'      => 'smk',
             'is_active' => true,
         ]);
 
         $this->student = Student::create([
-            'name'     => 'Siswa Test',
-            'gender'   => 'L',
+            'name'      => 'Siswa Test SuperAdmin',
+            'gender'    => 'L',
             'school_id' => $this->school->id,
         ]);
 
         $this->assessment = Assessment::create([
-            'student_id'      => $this->student->id,
-            'assessment_code' => 'ASM-SUPERTEST1',
-            'status'          => 'completed',
-            'completed_at'    => now(),
-            'started_at'      => now()->subMinutes(30),
+            'student_id'       => $this->student->id,
+            'assessment_code'  => 'ASM-SATEST-' . uniqid(),
+            'status'           => 'completed',
+            'completed_at'     => now(),
+            'started_at'       => now()->subMinutes(30),
             'duration_seconds' => 1800,
-            'score_r' => 80,
-            'score_i' => 60,
-            'score_a' => 70,
-            'score_s' => 55,
-            'score_e' => 65,
-            'score_c' => 50,
-            'riasec_code' => 'RAE',
+            'score_r'          => 80,
+            'score_i'          => 60,
+            'score_a'          => 70,
+            'score_s'          => 55,
+            'score_e'          => 65,
+            'score_c'          => 50,
+            'riasec_code'      => 'RAE',
         ]);
     }
 
@@ -76,13 +97,13 @@ class SuperAdminAnswerManagementTest extends TestCase
 
     protected function createSuperAdmin(): User
     {
-        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        // Role super_admin sudah ada dari data sync riasec_testing
         $user = User::factory()->create();
         $user->assignRole('super_admin');
         return $user;
     }
 
-    /** Regular user without super_admin role. */
+    /** Regular user tanpa role super_admin. */
     protected function createRegularAdmin(): User
     {
         return User::factory()->create(['school_id' => $this->school->id]);
