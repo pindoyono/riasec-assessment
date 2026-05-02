@@ -381,8 +381,8 @@
                         @endphp
                         <img src="data:image/svg+xml;base64,{{ base64_encode(
                             '
-                                                                                                                                                                                                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="175" height="175" viewBox="0 0 180 175">
-                                                                                                                                                                                                                                                                                                        ' .
+                                                                                                                                                                                                                                                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="175" height="175" viewBox="0 0 180 175">
+                                                                                                                                                                                                                                                                                                                                                        ' .
                                 implode(
                                     '',
                                     array_map(
@@ -391,7 +391,7 @@
                                     ),
                                 ) .
                                 '
-                                                                                                                                                                                                                                                                                                        ' .
+                                                                                                                                                                                                                                                                                                                                                        ' .
                                 implode(
                                     '',
                                     array_map(
@@ -408,16 +408,16 @@
                                     ),
                                 ) .
                                 '
-                                                                                                                                                                                                                                                                                                        <polygon points="' .
+                                                                                                                                                                                                                                                                                                                                                        <polygon points="' .
                                 $poly .
                                 '" fill="#b3e5fc" fill-opacity="0.4" stroke="#0ea5e9" stroke-width="1.5"/>
-                                                                                                                                                                                                                                                                                                        ' .
+                                                                                                                                                                                                                                                                                                                                                        ' .
                                 implode(
                                     '',
                                     array_map(fn($d) => '<circle cx="' . $d['cx'] . '" cy="' . $d['cy'] . '" r="2.5" fill="#0ea5e9"/>', $dots),
                                 ) .
                                 '
-                                                                                                                                                                                                                                                                                                        ' .
+                                                                                                                                                                                                                                                                                                                                                        ' .
                                 implode(
                                     '',
                                     array_map(
@@ -432,14 +432,14 @@
                                     ),
                                 ) .
                                 '
-                                                                                                                                                                                                                                                                                                        <rect x="' .
+                                                                                                                                                                                                                                                                                                                                                        <rect x="' .
                                 ($cx + 5) .
                                 '" y="5" width="8" height="6" fill="#0ea5e9"/>
-                                                                                                                                                                                                                                                                                                        <text x="' .
+                                                                                                                                                                                                                                                                                                                                                        <text x="' .
                                 ($cx + 15) .
                                 '" y="11" font-size="7" fill="#555" font-family="DejaVu Sans, sans-serif">SDS Holland</text>
-                                                                                                                                                                                                                                                                                                    </svg>
-                                                                                                                                                                                                                                                                                                ',
+                                                                                                                                                                                                                                                                                                                                                    </svg>
+                                                                                                                                                                                                                                                                                                                                                ',
                         ) }}"
                             width="175" height="175" />
                     </div>
@@ -453,7 +453,7 @@
                 <tr>
                     <th>RIASEC</th>
                     <th>Penjelasan</th>
-                    <th>Rekomendasi Profesi</th>
+                    <th>Rekomendasi Konsentrasi Keahlian SMK</th>
                 </tr>
             </thead>
             <tbody>

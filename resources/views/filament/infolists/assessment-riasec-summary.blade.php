@@ -8,7 +8,7 @@
             <tr class="bg-sky-100 text-sky-800">
                 <th class="px-4 py-3 text-left font-semibold w-44">RIASEC</th>
                 <th class="px-4 py-3 text-left font-semibold w-80">Penjelasan</th>
-                <th class="px-4 py-3 text-left font-semibold">Rekomendasi Jurusan</th>
+                <th class="px-4 py-3 text-left font-semibold">Rekomendasi Konsentrasi Keahlian SMK</th>
             </tr>
         </thead>
         <tbody>
@@ -35,10 +35,10 @@
                     </td>
                     <td class="px-4 py-4 text-gray-800 leading-6 {{ $isTop ? 'bg-amber-50' : 'bg-gray-50' }}">
                         @if (filled($row['recommendations']))
-                            <p class="text-xs text-gray-500 mb-1">Daftar jurusan yang sesuai:</p>
+                            <p class="text-xs text-gray-500 mb-1">Daftar konsentrasi keahlian SMK yang sesuai:</p>
                             <p>{{ $row['recommendations'] }}.</p>
                             <div class="mt-2 text-xs font-medium {{ $isTop ? 'text-amber-700' : 'text-gray-500' }}">
-                                Total jurusan terkait: {{ $row['recommendation_count'] }}
+                                Total konsentrasi keahlian terkait: {{ $row['recommendation_count'] }}
                             </div>
                         @else
                             <span class="text-gray-400">-</span>
@@ -48,7 +48,7 @@
             @empty
                 <tr>
                     <td colspan="3" class="px-4 py-4 text-center text-gray-500 bg-white">
-                        Belum ada ringkasan rekomendasi.
+                        Belum ada ringkasan rekomendasi konsentrasi keahlian SMK.
                     </td>
                 </tr>
             @endforelse

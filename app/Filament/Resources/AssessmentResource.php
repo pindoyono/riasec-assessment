@@ -181,7 +181,7 @@ class AssessmentResource extends Resource
                     ])
                     ->visible(fn (Assessment $record): bool => $record->status === 'completed'),
 
-                Section::make('Rekomendasi Jurusan SMK')
+                Section::make('Rekomendasi Konsentrasi Keahlian SMK')
                     ->schema([
                         Infolists\Components\ViewEntry::make('riasec_recommendation_summary')
                             ->label('')

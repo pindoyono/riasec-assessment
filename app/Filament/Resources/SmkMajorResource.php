@@ -21,11 +21,11 @@ class SmkMajorResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Master Data';
 
-    protected static ?string $navigationLabel = 'Jurusan SMK';
+    protected static ?string $navigationLabel = 'Konsentrasi Keahlian SMK';
 
-    protected static ?string $modelLabel = 'Jurusan SMK';
+    protected static ?string $modelLabel = 'Konsentrasi Keahlian SMK';
 
-    protected static ?string $pluralModelLabel = 'Jurusan SMK';
+    protected static ?string $pluralModelLabel = 'Konsentrasi Keahlian SMK';
 
     protected static ?int $navigationSort = 4;
 
@@ -33,7 +33,7 @@ class SmkMajorResource extends Resource
     {
         return $form
             ->components([
-                Section::make('Informasi Jurusan')
+                Section::make('Informasi Konsentrasi Keahlian')
                     ->schema([
                         Forms\Components\TextInput::make('code')
                             ->label('Kode Jurusan')
@@ -42,7 +42,7 @@ class SmkMajorResource extends Resource
                             ->unique(ignoreRecord: true),
 
                         Forms\Components\TextInput::make('name')
-                            ->label('Nama Kompetensi Keahlian')
+                            ->label('Nama Konsentrasi Keahlian')
                             ->required()
                             ->maxLength(255),
 
@@ -111,7 +111,7 @@ class SmkMajorResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Kompetensi Keahlian')
+                    ->label('Konsentrasi Keahlian')
                     ->searchable()
                     ->sortable()
                     ->wrap(),

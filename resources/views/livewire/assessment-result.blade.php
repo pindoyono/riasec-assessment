@@ -95,7 +95,7 @@
                     <tr class="bg-sky-100 text-sky-800">
                         <th class="px-4 py-3 text-left font-semibold w-28">RIASEC</th>
                         <th class="px-4 py-3 text-left font-semibold">Penjelasan</th>
-                        <th class="px-4 py-3 text-left font-semibold">Rekomendasi Profesi</th>
+                        <th class="px-4 py-3 text-left font-semibold">Rekomendasi Konsentrasi Keahlian SMK</th>
                     </tr>
                 </thead>
                 <tbody>
